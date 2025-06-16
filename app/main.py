@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from app.models.models import detect_food_labels
 from app.utils.fatsecret_clients import search_calorie
-from app.utils.openrouter_client import get_ai_eating_tips, extract_tips_from_ai_response, clean_markdown
+from app.utils.openrouter_client import get_ai_eating_tips, extract_tips_from_ai_response, clean_markdown, get_calorie_tips
 from pydantic import BaseModel
 import shutil
 import os

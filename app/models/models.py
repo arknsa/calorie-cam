@@ -41,7 +41,7 @@ yolo_model_v8s_finetuned = YOLO(os.path.join(BASE_DIR, model_filename_v8s_finetu
 # List of classes to exclude (Vietnamese food categories)
 excluded_classes = [
     "Banh_mi", "Banh_trang_tron", "Banh_xeo", "Bun_bo_Hue", "Bun_dau", "Com_tam",
-    "Goi_cuon", "Pho", "Hu_tieu", "Xoi"
+    "Goi_cuon", "Pho", "Hu_tieu", "Xoi", "Pudding"
 ]
 
 def filter_detections(detections):
@@ -49,7 +49,7 @@ def filter_detections(detections):
     return [d for d in detections if d["label"] not in excluded_classes]
 
 
-def detect_food_labels(image_path: str) -> List[Dict]:
+def detect_food_labels(image_path: str, confidence_threshold: float = 0.65) -> List[Dict]:
     detections = []
     model_used = "None"
 
@@ -69,7 +69,7 @@ def detect_food_labels(image_path: str) -> List[Dict]:
             label = prediction['class']
             confidence = prediction['confidence']
             
-            if confidence >= 0.50:
+            if confidence >= confidence_threshold:
                 detections.append({
                     "label": label,
                     "confidence": confidence,
@@ -89,11 +89,13 @@ def detect_food_labels(image_path: str) -> List[Dict]:
                 cls_id = int(box.cls[0].item())
                 label = yolo_model_v8s_pretrained.names[cls_id]
                 confidence = float(box.conf[0].item())
-                detections.append({
-                    "label": label,
-                    "confidence": confidence,
-                    "model": "YOLOv8s Pretrained",  # Menambahkan informasi model yang digunakan
-                })
+                
+                if confidence >= confidence_threshold:
+                    detections.append({
+                        "label": label,
+                        "confidence": confidence,
+                        "model": "YOLOv8s Pretrained",  # Menambahkan informasi model yang digunakan
+                    })
 
     # Step 3: If YOLOv8s pretrained fails, try the fine-tuned YOLOv8s model
     if not detections:
@@ -108,11 +110,13 @@ def detect_food_labels(image_path: str) -> List[Dict]:
                 cls_id = int(box.cls[0].item())
                 label = yolo_model_v8s_finetuned.names[cls_id]
                 confidence = float(box.conf[0].item())
-                detections.append({
-                    "label": label,
-                    "confidence": confidence,
-                    "model": "YOLOv8s Fine-tuned",  # Menambahkan informasi model yang digunakan
-                })
+                
+                if confidence >= confidence_threshold:
+                    detections.append({
+                        "label": label,
+                        "confidence": confidence,
+                        "model": "YOLOv8s Fine-tuned",  # Menambahkan informasi model yang digunakan
+                    })
 
     # Apply filter to remove unwanted detections
     detections = filter_detections(detections)
